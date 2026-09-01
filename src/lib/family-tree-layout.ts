@@ -39,7 +39,7 @@ const RADII: Array<[number, number]> = [
 ];
 
 function radius(depth: number) {
-  return RADII[Math.min(depth - 1, RADII.length - 1)];
+  return RADII[Math.min(depth - 1, RADII.length - 1)] as [number, number];
 }
 
 function ringRadius(depth: number) {
@@ -113,7 +113,7 @@ export function layoutTree(tree: FamilyTree): Layout {
   };
 
   tree.branches.forEach((branch, i) => {
-    const span = (totals[i] / grand) * (END - START);
+    const span = ((totals[i] ?? 1) / grand) * (END - START);
     place(branch, 1, cursor, cursor + span, branch.color, null);
     cursor += span;
   });
