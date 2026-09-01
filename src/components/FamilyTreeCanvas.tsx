@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import trunkAsset from "@/assets/trunk.png.asset.json";
 import type { FamilyTree } from "@/lib/family-tree-data";
 import { CANVAS_H, CANVAS_W, layoutTree, type PlacedNode } from "@/lib/family-tree-layout";
@@ -11,149 +11,127 @@ const strokeFor: Record<string, string> = {
   orange: "var(--branch-orange)",
 };
 
-function bubbleClasses(node: PlacedNode) {
-  if (node.depth === 1) return "bg-bubble-head text-bubble-head-foreground";
-  if (node.color === "orange" && node.depth === 2)
-    return "bg-branch-orange text-bubble-head-foreground";
-  return "bg-bubble-leaf text-bubble-leaf-foreground";
+function fill(node: PlacedNode) {
+  if (node.depth === 1) return "var(--bubble-head)";
+  if (node.color === "orange" && node.depth === 2) return "var(--branch-orange)";
+  return "var(--bubble-leaf)";
 }
+
+function textFill(node: PlacedNode) {
+  if (node.depth === 1) return "var(--bubble-head-foreground)";
+  if (node.color === "orange" && node.depth === 2) return "var(--trunk-foreground)";
+  return "var(--bubble-leaf-foreground)";
+}
+
+const TRUNK_W = 470;
+const TRUNK_H = (TRUNK_W / 768) * 1024;
 
 export function FamilyTreeCanvas({
   tree,
   selectedId,
   onSelect,
-  onRename,
 }: {
   tree: FamilyTree;
   selectedId: string | null;
   onSelect: (id: string) => void;
-  onRename: (id: string, name: string) => void;
 }) {
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
-  const [editing, setEditing] = useState<string | null>(null);
   const { nodes, edges } = useMemo(() => layoutTree(tree), [tree]);
-
-  useEffect(() => {
-    const el = wrapRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => {
-      setScale(Math.min(1, el.clientWidth / CANVAS_W));
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
+  const trunkX = CANVAS_W / 2 - TRUNK_W / 2;
+  const trunkY = CANVAS_H - TRUNK_H;
 
   return (
-    <div ref={wrapRef} dir="ltr" className="w-full overflow-hidden">
-      <div
-        style={{
-          width: CANVAS_W * scale,
-          height: CANVAS_H * scale,
-          margin: "0 auto",
-        }}
+    <svg
+      viewBox={`0 0 ${CANVAS_W} ${CANVAS_H}`}
+      className="h-auto w-full select-none"
+      role="img"
+      aria-label="شجرة عائلة حرب الجيوسي"
+    >
+      {edges.map((e) => (
+        <path
+          key={e.id}
+          d={e.path}
+          fill="none"
+          stroke={strokeFor[e.color]}
+          strokeWidth={e.width}
+          strokeLinecap="round"
+        />
+      ))}
+
+      <image
+        href={trunkAsset.url}
+        x={trunkX}
+        y={trunkY}
+        width={TRUNK_W}
+        height={TRUNK_H}
+        preserveAspectRatio="xMidYMax meet"
+      />
+      <g
+        fill="var(--trunk-foreground)"
+        textAnchor="middle"
+        fontWeight="700"
+        style={{ paintOrder: "stroke" }}
+        stroke="oklch(0.2 0.02 60 / 55%)"
+        strokeWidth="3"
       >
-        <div
-          className="relative"
-          style={{
-            width: CANVAS_W,
-            height: CANVAS_H,
-            transform: `scale(${scale})`,
-            transformOrigin: "top left",
-          }}
+        {tree.lineage.map((name, i) => (
+          <text
+            key={`${name}-${i}`}
+            x={CANVAS_W / 2}
+            y={trunkY + 200 + i * 44}
+            fontSize={36}
+          >
+            {name}
+          </text>
+        ))}
+        <text
+          x={CANVAS_W / 2}
+          y={trunkY + 210 + tree.lineage.length * 44}
+          fontSize={54}
+          fontWeight="900"
         >
-          <svg
-            className="absolute inset-0"
-            width={CANVAS_W}
-            height={CANVAS_H}
-            aria-hidden="true"
-          >
-            {edges.map((e) => (
-              <path
-                key={e.id}
-                d={e.path}
-                fill="none"
-                stroke={strokeFor[e.color]}
-                strokeWidth={e.width}
-                strokeLinecap="round"
-              />
-            ))}
-          </svg>
+          {tree.surname}
+        </text>
+      </g>
 
-          {nodes.map((node) => {
-            const selected = node.id === selectedId;
-            const fontSize =
-              node.depth === 1 ? 30 : node.depth === 2 ? 22 : node.depth === 3 ? 17 : 14;
-            return (
-              <button
-                key={node.id}
-                type="button"
-                onClick={() => onSelect(node.id)}
-                onDoubleClick={() => setEditing(node.id)}
-                className={`absolute flex items-center justify-center rounded-full px-2 text-center font-bold leading-tight shadow-sm transition-transform hover:scale-105 ${bubbleClasses(node)} ${
-                  selected ? "ring-4 ring-ring ring-offset-2 ring-offset-background" : ""
-                }`}
-                style={{
-                  width: node.rx * 2,
-                  height: node.ry * 2,
-                  left: node.x - node.rx,
-                  top: node.y - node.ry,
-                  fontSize,
-                }}
-              >
-                {editing === node.id ? (
-                  <input
-                    autoFocus
-                    defaultValue={node.name}
-                    onBlur={(e) => {
-                      onRename(node.id, e.currentTarget.value.trim() || node.name);
-                      setEditing(null);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") e.currentTarget.blur();
-                      if (e.key === "Escape") setEditing(null);
-                    }}
-                    className="w-full bg-transparent text-center outline-none"
-                    style={{ fontSize }}
-                  />
-                ) : (
-                  node.name
-                )}
-              </button>
-            );
-          })}
-
-          <div
-            className="absolute bottom-0 left-1/2 -translate-x-1/2"
-            style={{ width: 430 }}
+      {nodes.map((node) => {
+        const selected = node.id === selectedId;
+        const base = node.depth === 1 ? 32 : node.depth === 2 ? 23 : node.depth === 3 ? 18 : 15;
+        const fontSize = Math.min(base, (node.rx * 1.85) / Math.max(3, node.name.length) + 6);
+        return (
+          <g
+            key={node.id}
+            className="cursor-pointer"
+            onClick={() => onSelect(node.id)}
+            tabIndex={0}
+            role="button"
+            aria-label={node.name}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") onSelect(node.id);
+            }}
           >
-            <img
-              src={trunkAsset.url}
-              alt="جذع شجرة العائلة"
-              width={768}
-              height={1024}
-              className="w-full select-none"
+            <ellipse
+              cx={node.x}
+              cy={node.y}
+              rx={node.rx}
+              ry={node.ry}
+              fill={fill(node)}
+              stroke={selected ? "var(--foreground)" : "transparent"}
+              strokeWidth={selected ? 5 : 0}
             />
-            <div className="pointer-events-none absolute inset-x-0 top-[18%] flex flex-col items-center gap-1">
-              {tree.lineage.map((name, i) => (
-                <span
-                  key={`${name}-${i}`}
-                  className="text-trunk-foreground font-bold drop-shadow-md"
-                  style={{ fontSize: 30 }}
-                >
-                  {name}
-                </span>
-              ))}
-              <span
-                className="text-trunk-foreground mt-2 font-black drop-shadow-md"
-                style={{ fontSize: 46 }}
-              >
-                {tree.surname}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+            <text
+              x={node.x}
+              y={node.y}
+              textAnchor="middle"
+              dominantBaseline="central"
+              fontSize={fontSize}
+              fontWeight={node.depth === 1 ? 900 : 700}
+              fill={textFill(node)}
+            >
+              {node.name}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
   );
 }
