@@ -1,7 +1,7 @@
 import type { BranchColor, FamilyTree, TreeNode } from "./family-tree-data";
 
-export const CANVAS_W = 1700;
-export const CANVAS_H = 1150;
+export const CANVAS_W = 2000;
+export const CANVAS_H = 1450;
 
 export interface PlacedNode {
   id: string;
@@ -28,22 +28,23 @@ export interface Layout {
 }
 
 const ORIGIN_X = CANVAS_W / 2;
-const ORIGIN_Y = CANVAS_H - 210;
+const ORIGIN_Y = CANVAS_H - 260;
 
-const RADII: Array<[number, number]> = [
-  [66, 66],
-  [58, 44],
-  [46, 36],
-  [38, 30],
-  [32, 26],
-];
+const FONT: number[] = [32, 24, 19, 16, 15];
 
-function radius(depth: number) {
-  return RADII[Math.min(depth - 1, RADII.length - 1)] as [number, number];
+export function fontSizeFor(depth: number) {
+  return FONT[Math.min(depth - 1, FONT.length - 1)] as number;
+}
+
+function bubbleSize(name: string, depth: number): [number, number] {
+  const f = fontSizeFor(depth);
+  const rx = Math.max(f * 1.5, name.length * f * 0.33 + 16);
+  const ry = depth === 1 ? Math.max(f * 1.7, rx * 0.72) : Math.max(f * 1.15, 22);
+  return [rx, ry];
 }
 
 function ringRadius(depth: number) {
-  return 190 + (depth - 1) * 195;
+  return 330 + (depth - 1) * 240;
 }
 
 function leafCount(node: TreeNode): number {
@@ -55,8 +56,8 @@ export function layoutTree(tree: FamilyTree): Layout {
   const nodes: PlacedNode[] = [];
   const edges: PlacedEdge[] = [];
 
-  const START = 12;
-  const END = 168;
+  const START = 6;
+  const END = 174;
 
   const totals = tree.branches.map((b) =>
     b.children.length ? b.children.reduce((s, c) => s + leafCount(c), 0) : 1,
@@ -76,12 +77,12 @@ export function layoutTree(tree: FamilyTree): Layout {
     const angle = (from + to) / 2;
     const rad = (angle * Math.PI) / 180;
     const R = ringRadius(depth);
-    const [rx, ry] = radius(depth);
+    const [rx, ry] = bubbleSize(node.name, depth);
     const placed: PlacedNode = {
       id: node.id,
       name: node.name,
       x: ORIGIN_X + R * Math.cos(rad),
-      y: ORIGIN_Y - R * Math.sin(rad) * 0.86,
+      y: ORIGIN_Y - R * Math.sin(rad) * 0.95,
       depth,
       color,
       parentId: parent ? parent.id : null,
@@ -97,7 +98,7 @@ export function layoutTree(tree: FamilyTree): Layout {
       id: `${parent ? parent.id : "root"}-${node.id}`,
       path: `M ${px} ${py} C ${px} ${midY}, ${placed.x} ${midY}, ${placed.x} ${placed.y}`,
       color,
-      width: Math.max(7, 26 - depth * 5),
+      width: Math.max(8, 30 - depth * 5),
     });
 
     const kids = node.children;
