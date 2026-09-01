@@ -83,15 +83,15 @@ export function FamilyTreeCanvas({
           <text
             key={`${name}-${i}`}
             x={CANVAS_W / 2}
-            y={trunkY + 230 + i * 42}
-            fontSize={34}
+            y={trunkY + 120 + i * 38}
+            fontSize={32}
           >
             {name}
           </text>
         ))}
         <text
           x={CANVAS_W / 2}
-          y={trunkY + 245 + tree.lineage.length * 42}
+          y={trunkY + 140 + tree.lineage.length * 38}
           fontSize={54}
           fontWeight="900"
         >
