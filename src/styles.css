@@ -59,6 +59,17 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-branch-yellow: var(--branch-yellow);
+  --color-branch-blue: var(--branch-blue);
+  --color-branch-green: var(--branch-green);
+  --color-branch-gray: var(--branch-gray);
+  --color-branch-orange: var(--branch-orange);
+  --color-bubble-head: var(--bubble-head);
+  --color-bubble-head-foreground: var(--bubble-head-foreground);
+  --color-bubble-leaf: var(--bubble-leaf);
+  --color-bubble-leaf-foreground: var(--bubble-leaf-foreground);
+  --color-trunk-foreground: var(--trunk-foreground);
+  --font-arabic: "Cairo", "Tajawal", system-ui, sans-serif;
 }
 
 :root {
@@ -95,6 +106,17 @@
   --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
+
+  --branch-yellow: oklch(0.9 0.18 100);
+  --branch-blue: oklch(0.74 0.14 235);
+  --branch-green: oklch(0.63 0.15 155);
+  --branch-gray: oklch(0.79 0.005 250);
+  --branch-orange: oklch(0.72 0.15 45);
+  --bubble-head: oklch(0.33 0.15 285);
+  --bubble-head-foreground: oklch(0.93 0.18 100);
+  --bubble-leaf: oklch(0.9 0.18 100);
+  --bubble-leaf-foreground: oklch(0.25 0.03 265);
+  --trunk-foreground: oklch(0.99 0 0);
 }
 
 .dark {
