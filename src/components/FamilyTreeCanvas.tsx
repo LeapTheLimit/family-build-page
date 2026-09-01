@@ -45,7 +45,7 @@ export function FamilyTreeCanvas({
   }, []);
 
   return (
-    <div ref={wrapRef} className="w-full overflow-hidden">
+    <div ref={wrapRef} dir="ltr" className="w-full overflow-hidden">
       <div
         style={{
           width: CANVAS_W * scale,
