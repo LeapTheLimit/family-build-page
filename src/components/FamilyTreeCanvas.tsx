@@ -1,7 +1,13 @@
 import { useMemo } from "react";
 import trunkAsset from "@/assets/trunk.png.asset.json";
 import type { FamilyTree } from "@/lib/family-tree-data";
-import { CANVAS_H, CANVAS_W, layoutTree, type PlacedNode } from "@/lib/family-tree-layout";
+import {
+  CANVAS_H,
+  CANVAS_W,
+  fontSizeFor,
+  layoutTree,
+  type PlacedNode,
+} from "@/lib/family-tree-layout";
 
 const strokeFor: Record<string, string> = {
   yellow: "var(--branch-yellow)",
@@ -23,7 +29,7 @@ function textFill(node: PlacedNode) {
   return "var(--bubble-leaf-foreground)";
 }
 
-const TRUNK_W = 470;
+const TRUNK_W = 430;
 const TRUNK_H = (TRUNK_W / 768) * 1024;
 
 export function FamilyTreeCanvas({
@@ -77,15 +83,15 @@ export function FamilyTreeCanvas({
           <text
             key={`${name}-${i}`}
             x={CANVAS_W / 2}
-            y={trunkY + 200 + i * 44}
-            fontSize={36}
+            y={trunkY + 230 + i * 42}
+            fontSize={34}
           >
             {name}
           </text>
         ))}
         <text
           x={CANVAS_W / 2}
-          y={trunkY + 210 + tree.lineage.length * 44}
+          y={trunkY + 245 + tree.lineage.length * 42}
           fontSize={54}
           fontWeight="900"
         >
@@ -95,8 +101,7 @@ export function FamilyTreeCanvas({
 
       {nodes.map((node) => {
         const selected = node.id === selectedId;
-        const base = node.depth === 1 ? 32 : node.depth === 2 ? 23 : node.depth === 3 ? 18 : 15;
-        const fontSize = Math.min(base, (node.rx * 1.85) / Math.max(3, node.name.length) + 6);
+        const fontSize = fontSizeFor(node.depth);
         return (
           <g
             key={node.id}
