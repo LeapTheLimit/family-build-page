@@ -164,7 +164,6 @@ function FamilyTreePage() {
             tree={tree}
             selectedId={selectedId}
             onSelect={setSelectedId}
-            onRename={rename}
           />
         </section>
       </main>
